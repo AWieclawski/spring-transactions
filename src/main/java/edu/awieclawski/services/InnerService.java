@@ -3,12 +3,14 @@ package edu.awieclawski.services;
 import edu.awieclawski.entities.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Slf4j
 @Service
+@Transactional(isolation = Isolation.READ_COMMITTED)
 public class InnerService {
     @Transactional(propagation = Propagation.REQUIRED)
     public void doRequired(User user) {
