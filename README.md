@@ -43,7 +43,7 @@
 
 - body:
 
-  `{"firstName": "John", "lastName":"Smith", "address": {"city": "New York", "postalCode":"41-641", "country": "USA"}}`
+  `{"firstName": "John", "lastName":"Smith", "email": "johnsmith@gmail.com", "login": "johnsmith", "address": {"city": "New York", "postalCode":"41-641", "country": "USA"}}`
 
 - useful end-points:
 
