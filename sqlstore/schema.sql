@@ -20,11 +20,17 @@ CREATE TABLE IF NOT EXISTS public.addresses (
 	updated_at timestamp NULL,
 	version int8 NULL,
 	transaction_name varchar(255) NULL,
-	city varchar(255) NOT NULL,
-	country varchar(255) NULL,
-	postal_code  varchar(255) NOT NULL,
+	verification_key varchar(255) NULL,
+	city varchar(50) NOT NULL,
+	country varchar(49) NULL,
+	postal_code varchar(6) NOT NULL,
+	street_local varchar(100) NULL,
 	CONSTRAINT addresses_pkey PRIMARY KEY (id)
 );
+
+-- public.addresses unique index
+
+CREATE UNIQUE INDEX addresses_street_local_idx ON addresses (street_local)
 
 -- public.users definition
 
@@ -38,11 +44,12 @@ CREATE TABLE IF NOT EXISTS public.users (
 	updated_at timestamp NULL,
 	version int8 NULL,
 	transaction_name varchar(255) NULL,
+	verification_key varchar(255) NULL,
 	login varchar(255) NOT NULL UNIQUE,
 	first_name varchar(255) NULL,
 	last_name varchar(255) NULL,
 	address_id int8 NOT NULL,
-	email varchar(255)  NOT NULL UNIQUE,
+	email varchar(255) NOT NULL UNIQUE,
 	phone varchar(255) NULL,
 	CONSTRAINT users_pkey PRIMARY KEY (id)
 );
@@ -63,6 +70,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
 	updated_at timestamp NULL,
 	version int8 NULL,
 	transaction_name varchar(255) NULL,
+	verification_key varchar(255) NULL,
 	order_date timestamp NULL,
 	order_no varchar(255) NOT NULL UNIQUE,
 	email varchar(255) NOT NULL,
@@ -87,6 +95,7 @@ CREATE TABLE IF NOT EXISTS public.positions (
 	updated_at timestamp NULL,
 	version int8 NULL,
 	transaction_name varchar(255) NULL,
+	verification_key varchar(255) NULL,
 	order_id int8 NOT NULL,
 	description varchar(255) NOT NULL,
 	quantity numeric(16, 2) NULL,

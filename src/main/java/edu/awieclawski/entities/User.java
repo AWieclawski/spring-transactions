@@ -6,7 +6,6 @@ import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Entity
@@ -45,8 +44,8 @@ public class User extends BaseEntity {
     private List<Order> orders;
 
     @Override
-    Set<String> getVerificationFields() {
-        return Set.of("firstName", "lastName");
+    List<String> getVerificationFields() {
+        return List.of("firstName", "lastName", "login");
     }
 }
 

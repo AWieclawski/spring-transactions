@@ -12,6 +12,7 @@ public class AddressMapper {
         target.setCity(source.getCity());
         target.setCountry(source.getCountry());
         target.setPostalCode(source.getPostalCode());
+        target.setStreetLocal(source.getStreetLocal());
     }
 
     public static Address toEntity(AddressDto dto) {
@@ -19,6 +20,7 @@ public class AddressMapper {
                 .city(dto.getCity())
                 .country(dto.getCountry())
                 .postalCode(dto.getPostalCode())
+                .streetLocal(dto.getStreetLocal())
                 .build();
     }
 
@@ -28,6 +30,7 @@ public class AddressMapper {
                 .city(entity.getCity())
                 .country(entity.getCountry())
                 .postalCode(entity.getPostalCode())
+                .streetLocal(entity.getStreetLocal())
                 .build()
                 : null;
     }

@@ -30,11 +30,23 @@ public class ReflectionUtils {
         return (String) FieldUtils.readField(obj, fieldName, true);
     }
 
+    public static <T> String getSafeStringFieldValue(@NotNull T obj, @NotNull String fieldName) {
+        try {
+            return getStringFieldValue(obj, fieldName);
+        } catch (Exception ignore) {
+            return "";
+        }
+    }
+
     @SneakyThrows
     public static Object getFieldValue(@NotNull Object obj, @NotNull String fieldName) {
         return FieldUtils.readField(obj, fieldName, true);
     }
 
+    public static String getCleanFieldValue(@NotNull Object obj, String fieldName) {
+        String result = ReflectionUtils.getSafeStringFieldValue(obj, fieldName);
+        return result != null ? result.replaceAll("\\s", "").toLowerCase() : "";
+    }
 
 
     public static <T> boolean isFieldDeclared(Class<T> clazz, String fdName) {

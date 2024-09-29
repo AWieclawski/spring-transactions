@@ -49,7 +49,8 @@ public class AddressServiceImpl extends TransactionalBase<Address> implements Ad
     @Override
     public void assignAddressToUser(User user) {
         AtomicReference<Address> address = new AtomicReference<>(user.getAddress());
-        getBaseRepository().findByCountryAndCity(address.get().getCountry(), address.get().getCity()).stream()
+        String verKey = address.get().buildVerificationKey();
+        getBaseRepository().findByVerificationKey(verKey).stream()
                 .findFirst().ifPresentOrElse(address::set, () -> saveNewAddress(address.get()));
         user.setAddress(address.get());
     }

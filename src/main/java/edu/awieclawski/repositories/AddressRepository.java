@@ -11,4 +11,6 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
 
     List<Address> findByCountryAndCity(String country, String city);
 
+    List<Address> findByVerificationKey(String verificationKey);
+
 }

@@ -1,7 +1,7 @@
 -- insert demo data in existing tables
 
-INSERT INTO addresses(id, city, country, postal_code)
-VALUES (-1, 'Democity', 'Democountry', 'DEMO_POST_CODE') ON CONFLICT DO NOTHING;
+INSERT INTO addresses(id, city, country, postal_code, street_local, verification_key)
+VALUES (-1, 'Democity', 'Democountry', 'DEMOPC', 'DEMO_STREET_LOCAL'. 'DEMO_UNIQUE_VERIFICATION_KEY') ON CONFLICT DO NOTHING;
 
 INSERT INTO users(id, first_name, last_name, login, email, address_id)
 VALUES (-1, 'Demofirstname', 'Demolastname', 'DEMO_LOGIN', 'demo@email.edu', -1) ON CONFLICT DO NOTHING;

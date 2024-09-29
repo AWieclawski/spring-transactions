@@ -28,11 +28,14 @@ public class Address extends BaseEntity {
     @Column(name = "postal_code", nullable = false)
     private String postalCode;
 
+    @Column(name = "street_local")
+    private String streetLocal;
+
     @OneToMany(mappedBy = "address")
     private List<User> users;
 
     @Override
-    Set<String> getVerificationFields() {
-        return Set.of("city", "country");
+    List<String> getVerificationFields() {
+        return List.of("country", "city", "postalCode", "streetLocal");
     }
 }

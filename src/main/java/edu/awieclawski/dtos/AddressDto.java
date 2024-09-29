@@ -19,4 +19,5 @@ public class AddressDto {
 
     private String postalCode;
 
+    private String streetLocal;
 }

@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Set;
 
 
 @Getter
@@ -55,8 +54,8 @@ public class Order extends BaseEntity {
     private BigDecimal orderAmount;
 
     @Override
-    Set<String> getVerificationFields() {
-        return Set.of();
+    List<String> getVerificationFields() {
+        return List.of("orderNo");
     }
 
     public void assignOrderNo(int counter, String stringDate) {
