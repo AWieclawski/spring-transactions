@@ -32,6 +32,6 @@ public class OrderPosition extends BaseEntity {
 
     @Override
     List<String> getVerificationFields() {
-        return List.of();
+        return List.of("order.orderNo", "position.description");
     }
 }

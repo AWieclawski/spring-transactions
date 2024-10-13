@@ -32,7 +32,7 @@ public class ReflectionUtils {
 
     public static <T> String getSafeStringFieldValue(@NotNull T obj, @NotNull String fieldName) {
         try {
-            return getStringFieldValue(obj, fieldName);
+            return getStringFieldValueInEmbeddedEntity(obj, fieldName);
         } catch (Exception ignore) {
             return "";
         }
@@ -44,7 +44,7 @@ public class ReflectionUtils {
     }
 
     public static String getCleanFieldValue(@NotNull Object obj, String fieldName) {
-        String result = ReflectionUtils.getSafeStringFieldValue(obj, fieldName);
+        String result = getSafeStringFieldValue(obj, fieldName);
         return result != null ? result.replaceAll("\\s", "").toLowerCase() : "";
     }
 
