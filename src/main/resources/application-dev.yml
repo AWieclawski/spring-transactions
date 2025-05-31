@@ -8,8 +8,11 @@ spring:
     init:
       mode: always
       platform: postgres
+      data-locations: classpath:demo/demodata.sql
   jpa:
     generate-ddl: true
-    open-in-view: false
+    open-in-view: true
+    hibernate:
+      ddl-auto: none
   messages:
     basename: exceptions

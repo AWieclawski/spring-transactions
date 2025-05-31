@@ -69,5 +69,8 @@
 
  POST `localhost:8080/users/byemailcontent` body: `{"content": "@gmail."}`
 
+ POST `localhost:8080/positions/bypositionnames?page=1&size=2` body: `["DEMO DESCRIPTION 1", "DEMO DESCRIPTION 2", "DEMO DESCRIPTION 5", "DEMO DESCRIPTION 7"]`
+
+ GET `localhost:8080/positions/all`
 
 

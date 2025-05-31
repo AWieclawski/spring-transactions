@@ -4,6 +4,7 @@ import edu.awieclawski.dtos.OrderPositionDto;
 import edu.awieclawski.entities.OrderPosition;
 
 import java.util.List;
+import java.util.Map;
 
 public interface OrderPositionService {
 
@@ -14,5 +15,9 @@ public interface OrderPositionService {
     void deletePositionsFromOrder(List<OrderPosition> orderPositions);
 
     OrderPositionDto updatePosition(OrderPositionDto positionDto);
+
+    Map<String, Object> getByPositionNames(List<String> porderIds, Integer page, Integer size);
+
+    List<OrderPositionDto> getAllPositions();
 
 }

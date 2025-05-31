@@ -1,18 +1,23 @@
 package edu.awieclawski.services.impl;
 
+import edu.awieclawski.daos.PositionsDao;
 import edu.awieclawski.dtos.OrderPositionDto;
 import edu.awieclawski.entities.OrderPosition;
 import edu.awieclawski.mappers.PositionsMapper;
 import edu.awieclawski.repositories.OrderPositionRepository;
 import edu.awieclawski.services.OrderPositionService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Do not inject OrderService, can cause Stack OverFlow as a feedback
@@ -22,14 +27,14 @@ import java.util.List;
 @Transactional(isolation = Isolation.READ_COMMITTED)
 public class OrderPositionServiceImpl extends TransactionalBase<OrderPosition> implements OrderPositionService {
 
-    public OrderPositionServiceImpl(OrderPositionRepository positionRepository) {
+    private final PositionsDao positionsDao;
+
+    public OrderPositionServiceImpl(OrderPositionRepository positionRepository,
+                                    PositionsDao positionsDao) {
         super(positionRepository);
+        this.positionsDao = positionsDao;
     }
 
-    @Override
-    public OrderPositionRepository getBaseRepository() {
-        return ((OrderPositionRepository) baseRepository);
-    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -58,6 +63,46 @@ public class OrderPositionServiceImpl extends TransactionalBase<OrderPosition> i
         return PositionsMapper.toDto(foundPosition);
     }
 
+    @Override
+    public Map<String, Object> getByPositionNames(List<String> positionNames, Integer page, Integer size) {
+        try {
+            Page<OrderPosition> pagePositions = getPositionsByPositionNames(positionNames, page, size);
+            return mapPagePositionsToMap(pagePositions);
+        } catch (Exception e) {
+            log.error("Get Page by positions names failed! {}", e.getMessage());
+            return getRawResponseMap();
+        }
+    }
+
+    @Override
+    public List<OrderPositionDto> getAllPositions() {
+        return getBaseRepository().findAll().stream()
+                .map(PositionsMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public OrderPositionRepository getBaseRepository() {
+        return ((OrderPositionRepository) baseRepository);
+    }
+
+    private Page<OrderPosition> getPositionsByPositionNames(List<String> positionNames, Integer page, Integer size) {
+        return positionsDao.getByPositionNames(positionNames, page, size);
+    }
+
+    private Map<String, Object> mapPagePositionsToMap(Page<OrderPosition> pagePositions) {
+        List<OrderPosition> positions = pagePositions.getContent();
+        List<OrderPositionDto> positionDtos = positions.stream()
+                .map(PositionsMapper::toDto)
+                .collect(Collectors.toList());
+        var response = getRawResponseMap();
+        response.put("positions", positionDtos);
+        response.put("currentPage", pagePositions.getNumber());
+        response.put("totalItems", pagePositions.getTotalElements());
+        response.put("totalPages", pagePositions.getTotalPages());
+        return response;
+    }
+
     private OrderPosition saveNewPosition(OrderPosition position) {
         try {
             return saveNewEntity(position);
@@ -67,5 +112,8 @@ public class OrderPositionServiceImpl extends TransactionalBase<OrderPosition> i
         return null;
     }
 
+    private Map<String, Object> getRawResponseMap() {
+        return new HashMap<>();
+    }
 
 }

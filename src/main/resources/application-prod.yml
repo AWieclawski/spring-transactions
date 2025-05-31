@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:1212/${DATABASE_NAME:appdatabase}
+    username: ${USER_NAME:appadmin}
+    password: ${USER_PASSWORD:123456789}
+    driverClassName: org.postgresql.Driver
+  sql:
+    init:
+      mode: never
+      platform: postgres
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+  messages:
+    basename: exceptions

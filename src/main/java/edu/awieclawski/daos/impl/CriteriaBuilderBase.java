@@ -4,11 +4,23 @@ import edu.awieclawski.entities.BaseEntity;
 import edu.awieclawski.utils.ReflectionUtils;
 import io.hypersistence.utils.hibernate.query.SQLExtractor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CollectionJoin;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.ListJoin;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.SetJoin;
+import javax.persistence.criteria.Subquery;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +61,25 @@ abstract class CriteriaBuilderBase<T extends BaseEntity> {
         return List.of();
     }
 
+
+    protected Page<T> findByPropertyNameValuesPaged(String propertyName, List<String> propertyValues, Pageable pageable) {
+        final CriteriaQuery<T> criteriaQuery = createCriteriaQuery(entityClazz);
+        final Root<T> rootEntity = criteriaQuery.from(entityClazz);
+        if (ReflectionUtils.isFieldDeclaredInEmbeddedEntity(entityClazz, propertyName)) {
+            Predicate predicate = handleEmbeddedEntity(rootEntity, propertyName).in(propertyValues);
+            criteriaQuery.select(rootEntity).where(predicate);
+            TypedQuery<T> query = entityManager.createQuery(criteriaQuery);
+            int totalRows = query.getResultList().size();
+            // OFFSET Clause
+            query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+            query.setMaxResults(pageable.getPageSize());
+            return new PageImpl<>(query.getResultList(), pageable, totalRows);
+        } else {
+            return Page.empty();
+        }
+    }
+
+
     protected List<T> findByPropertyNameContent(String propertyName, String content) {
         final CriteriaQuery<T> criteriaQuery = createCriteriaQuery(entityClazz);
         final Root<T> rootEntity = criteriaQuery.from(entityClazz);
@@ -63,11 +94,11 @@ abstract class CriteriaBuilderBase<T extends BaseEntity> {
     /**
      * Useful when property may be in Many-To-One relation to generic Entity <T>
      *
-     * @param propertyName - field name in generic Entity <T>
-     * @param subEntityClazz - Class of field in generic Entity <T>
-     * @param subPropertyName - field name in subordinate Entity <S>
+     * @param propertyName      - field name in generic Entity <T>
+     * @param subEntityClazz    - Class of field in generic Entity <T>
+     * @param subPropertyName   - field name in subordinate Entity <S>
      * @param subPropertyValues - searched values field name in subordinate Entity <S>
-     * @param <S> - type of subordinate Entity <S>
+     * @param <S>               - type of subordinate Entity <S>
      * @return
      */
     protected <S extends BaseEntity> List<T> findBySubPropertyValuesExtended(String propertyName,
@@ -87,30 +118,30 @@ abstract class CriteriaBuilderBase<T extends BaseEntity> {
                 Expression<String> rootSubExpression = handleEmbeddedEntity(rootSubEntity, subPropertyName);
                 Predicate rootSubPredicate = rootSubExpression.in(subPropertyValues);
                 subQuery.where(rootSubPredicate);
+
+                Class<?> propertyTypeClazz = ReflectionUtils.getFieldType(rootEntity.getModel().getJavaType(), propertyName);
+                Predicate rootPredicate;
+
+                if (List.class.isAssignableFrom(propertyTypeClazz)) {
+                    ListJoin<T, S> propertyEntities = rootEntity.joinList(propertyName);
+                    rootPredicate = criteriaBuilder.in(propertyEntities).value(subQuery);
+                } else if (Set.class.isAssignableFrom(propertyTypeClazz)) {
+                    SetJoin<T, S> propertyEntities = rootEntity.joinSet(propertyName);
+                    rootPredicate = criteriaBuilder.in(propertyEntities).value(subQuery);
+                } else if (Collection.class.isAssignableFrom(propertyTypeClazz)) {
+                    CollectionJoin<T, S> propertyEntities = rootEntity.joinCollection(propertyName);
+                    rootPredicate = criteriaBuilder.in(propertyEntities).value(subQuery);
+                } else {
+                    Expression<String> rootExpression = handleEmbeddedEntity(rootEntity, propertyName);
+                    rootPredicate = rootExpression.in(subQuery);
+                }
+
+                criteriaQuery.where(rootPredicate);
+                TypedQuery<T> query = entityManager.createQuery(criteriaQuery);
+                loggerSql(query);
+
+                return query.getResultList();
             }
-
-            Class<?> propertyTypeClazz = ReflectionUtils.getFieldType(rootEntity.getModel().getJavaType(), propertyName);
-            Predicate rootPredicate;
-
-            if (List.class.isAssignableFrom(propertyTypeClazz)) {
-                ListJoin<T, S> propertyEntities = rootEntity.joinList(propertyName);
-                rootPredicate = criteriaBuilder.in(propertyEntities).value(subQuery);
-            } else if (Set.class.isAssignableFrom(propertyTypeClazz)) {
-                SetJoin<T, S> propertyEntities = rootEntity.joinSet(propertyName);
-                rootPredicate = criteriaBuilder.in(propertyEntities).value(subQuery);
-            } else if (Collection.class.isAssignableFrom(propertyTypeClazz)) {
-                CollectionJoin<T, S> propertyEntities = rootEntity.joinCollection(propertyName);
-                rootPredicate = criteriaBuilder.in(propertyEntities).value(subQuery);
-            } else {
-                Expression<String> rootExpression = handleEmbeddedEntity(rootEntity, propertyName);
-                rootPredicate = rootExpression.in(subQuery);
-            }
-
-            criteriaQuery.where(rootPredicate);
-            TypedQuery<T> query = entityManager.createQuery(criteriaQuery);
-            loggerSql(query);
-
-            return query.getResultList();
 
         }
         return List.of();
